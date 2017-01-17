@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Idioms on A Bird in the Hand</title>
+    <link>https://kodykantor.github.io/categories/idioms/index.xml</link>
+    <description>Recent content in Idioms on A Bird in the Hand</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://kodykantor.github.io/categories/idioms/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Worth Two in the Bush</title>
+      <link>https://kodykantor.github.io/post/worth-two-in-the-bush/</link>
+      <pubDate>Mon, 16 Jan 2017 17:19:11 -0600</pubDate>
+      
+      <guid>https://kodykantor.github.io/post/worth-two-in-the-bush/</guid>
+      <description>&lt;p&gt;Idioms are some of my favorite literary constructs to think about. They can
+contain so many meanings in a single sentence. I think of them as the English
+equivalent of those hilarious &amp;lsquo;Chinese proverbs&amp;rsquo; that everyone&amp;rsquo;s dad always
+dropped at Thanksgiving dinner.&lt;/p&gt;
+
+&lt;p&gt;A lot of people who aren&amp;rsquo;t native English speakers don&amp;rsquo;t understand idioms.
+Heck, even some Americans don&amp;rsquo;t understand idioms, but we still use them!
+They&amp;rsquo;re fun, and they just roll off the tongue so easily. I work with some
+non-native English speakers, and that leads me to think about idioms more than
+the average American.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s think about a couple idioms. &amp;lsquo;A bird in the hand is worth two in the
+bush.&amp;rsquo; That&amp;rsquo;s one that we all know. It means, to me, that something that is
+possessed is worth twice as much as something that is not possessed. Possessing
+50 dollars is worth the &lt;em&gt;possibility&lt;/em&gt; of possessing 100 dollars. Don&amp;rsquo;t take any
+bets. Our tendency is to actually do the opposite. We tend to want to give up 50
+dollars for a chance at 100 dollars. That&amp;rsquo;s why casinos and lotteries are in
+business, right?&lt;/p&gt;
+
+&lt;p&gt;This reminds me of a quote from one of the people I used to work with. &amp;lsquo;Running
+code speaks louder than words.&amp;rsquo; Software engineers can be very successful
+without writing any code. We all know these people. I call them &lt;em&gt;technology
+hipsters&lt;/em&gt;. These are people who think that they have a monopoly on good ideas.
+Nobody has a monopoly on good ideas. Nobody.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s do some math, beginning with an assumption (as all good math does :) ).
+Let&amp;rsquo;s assume that everybody has one good idea every year. I&amp;rsquo;m talking real good
+ideas, like &amp;lsquo;hey, feature X would be awesome,&amp;rsquo; or &amp;lsquo;if we had a tool that did Y,
+it would make my life much easier.&amp;rsquo; My company, Veritas, has over 7k employees.
+Let&amp;rsquo;s assume 1k of them are software engineers. The total number of ideas each
+year is a simple function.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;yearly ideas = (total engineers) * (yearly good ideas per engineer)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If we just do simple substitution with these sample numbers:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;yearly ideas = (1,000) * (1)
+yearly ideas = 1,000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Whew. That was tough. So much math. Time to load back up on chili cheese Fritos.&lt;/p&gt;
+
+&lt;p&gt;As you can see from that math, a TON of ideas are sitting in the heads of
+engineers all the time. The best engineers are the ones who recognize when their
+idea is good, flesh out their idea, and write the code. The technology hipsters
+are the ones who have good ideas (just like the rest of us) but never intend to
+execute. Technology hipsters are unfortunately very popular at tradition
+top-down companies. These hipsters appeal to higher-ups with their knowledge of
+buzz words, and willingness to lead whatever initiative would be spun up to take
+on development of such an idea. Technology hipsters tend to trivialize problems
+by throwing around buzz-wordy phrases like &amp;lsquo;We just need to do some machine
+learning&amp;rsquo; without fully understanding the implications of doing such a thing
+(because they don&amp;rsquo;t do implementation, remember?)&lt;/p&gt;
+
+&lt;p&gt;So what does that mean in the context of our idiom? This:&lt;/p&gt;
+
+&lt;p&gt;**&amp;lsquo;A bird in the hand is worth two in the bush&amp;rsquo; == &amp;lsquo;Running code speaks louder
+&lt;strong&gt;than words&amp;rsquo;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The bird is the running code, and the two in the bush is the words.&lt;/p&gt;
+
+&lt;p&gt;We are stuck with technology hipsters. There&amp;rsquo;s nothing we can do about that. We
+can, however, do what engineers are supposed to do, which is write code. This
+means that if you&amp;rsquo;re working on a hackathon project, write some code! It doesn&amp;rsquo;t
+matter if the code only works on odd days of the month as long as your demo is
+on an odd day of the month. Stopping at a PowerPoint presentation means the
+death of your idea unless you want to become a technology hipster and work at a
+top-down company.&lt;/p&gt;
+
+&lt;p&gt;At a macro scale, software companies have to take chances. At some point they
+have to stop maintaining something (a bird in the hand) and take a bet (two in
+the bush) on building out a new offering. In that case, the company would prefer
+two in the bush over a bird in the hand.&lt;/p&gt;
+
+&lt;p&gt;This was very enlightening for me as a young engineer. I&amp;rsquo;m trying, as we all
+should, to strive to be an implementor and not a technology hipster. It&amp;rsquo;s much
+more difficult to write code than to make a PowerPoint presentation. There&amp;rsquo;s no
+doubt about that.&lt;/p&gt;
+
+&lt;p&gt;This blog will be my dumping ground for things that I&amp;rsquo;ve been thinking. This is
+where I can be a technology hipster. I&amp;rsquo;ll write about a cool idea I have, and
+maybe talk about running code from time to time. This is a magical place where
+you can hear about birds in the hand, and those in the bush.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
