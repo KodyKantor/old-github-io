@@ -1,16 +1,135 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>A Bird in the Hand</title>
+    <title>a bird in the hand</title>
     <link>https://kodykantor.github.io/index.xml</link>
-    <description>Recent content on A Bird in the Hand</description>
+    <description>Recent content on a bird in the hand</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 16 Jan 2017 17:19:11 -0600</lastBuildDate>
+    <lastBuildDate>Tue, 17 Jan 2017 15:46:05 -0600</lastBuildDate>
     <atom:link href="https://kodykantor.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Worth Two in the Bush</title>
+      <title>dockerbox - the virtual container filesystem</title>
+      <link>https://kodykantor.github.io/post/dockerbox/</link>
+      <pubDate>Tue, 17 Jan 2017 15:46:05 -0600</pubDate>
+      
+      <guid>https://kodykantor.github.io/post/dockerbox/</guid>
+      <description>&lt;p&gt;One of my favorite recent projects is my &lt;code&gt;dockerbox&lt;/code&gt; project. &lt;code&gt;dockerbox&lt;/code&gt; was a
+fun little idea I had after having messed around with Docker for the last couple
+years. &lt;a href=&#34;https://www.docker.com/&#34;&gt;Docker&lt;/a&gt; is a few different things - a REST API
+wrapper around container primitives in the kernel, a packaging mechanism for
+binaries and their dependencies, a process manager, and a bunch of other stuff.&lt;/p&gt;
+
+&lt;p&gt;I thoroughly enjoy spending most of my day in the Linux CLI. Something that
+bothers me about Docker is that the CLI is sort-of like the Linux CLI.
+Specifically, there&amp;rsquo;s a &lt;code&gt;docker ps&lt;/code&gt; command to list processes (containers), and
+a &lt;code&gt;docker exec&lt;/code&gt; command to spawn a process inside of a running container.
+&lt;code&gt;docker exec&lt;/code&gt; is a catch-all command, so you can run whatever CLI program you
+want to inside of the spawned container. It&amp;rsquo;s really not hard to use the Docker
+CLI. It has a very slight learning curve. Like most CLI programs, there&amp;rsquo;s a near
+infinite number of commands and flags to control the program.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;dockerbox&lt;/code&gt; aims to provide the familiar Linux CLI to managing containers. If
+I&amp;rsquo;m on Linux (or Unix) and I want to see my running processes, I can do
+something like &lt;code&gt;ls /proc&lt;/code&gt;. That will list out the process IDs for running
+processes, and I can drill down from there. Here&amp;rsquo;s something that you might see
+on a Linux host:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /proc
+1/  10/ 13/ 25/ 138/  139/  1130/
+kmsg  interrupts  meminfo
+...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If I wanted to, I could run &lt;code&gt;ls /proc/1/&lt;/code&gt; to see information about process 1,
+like open files, cgroup stuff, and more. &lt;code&gt;/proc&lt;/code&gt; is a virtual filesystem with a
+&lt;a href=&#34;https://blogs.oracle.com/eschrock/entry/the_power_of_proc&#34;&gt;cool history&lt;/a&gt;.
+&lt;code&gt;/proc&lt;/code&gt; may be getting a
+&lt;a href=&#34;http://2016.texaslinuxfest.org/sites/default/files/slides/time-to-rethink-proc-160821145019.pdf&#34;&gt;rewrite&lt;/a&gt;
+in future versions of Linux to fix some of the performance issues that are
+appearing as a result of new tools like &lt;a href=&#34;https://criu.org/Main_Page&#34;&gt;CRIU&lt;/a&gt;. CRIU
+in particular does a ton of open-read-close calls on the files in &lt;code&gt;/proc&lt;/code&gt;, which
+are expensive operations. After taking into consideration that CRIU freezes
+applications while it is running means that speed of collecting process
+information is crucial to minimizing application downtime. With the changes
+being suggested, &lt;code&gt;/proc&lt;/code&gt; may be going back to resemble its &lt;a href=&#34;http://lucasvr.gobolinux.org/etc/Killian84-Procfs-USENIX.pdf&#34;&gt;original
+form&lt;/a&gt;!&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;dockerbox&lt;/code&gt; aims to provide similar functionality for containers. So like &lt;code&gt;/proc&lt;/code&gt;
+but for container filesystems. If I were running &lt;code&gt;dockerbox&lt;/code&gt; on a machine, I could
+do something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /containers
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Each of the &amp;lsquo;directories&amp;rsquo; listed is a container. Running containers are colored
+green, and stopped/exited containers are colored red. Since those are
+directories, I can do something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /containers/happy_hopper/
+bin/   dev/   etc/   home/  proc/  root/  sys/   tmp/   usr/   var/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The equivalent statement in Docker lingo is &lt;code&gt;docker exec -it happy_hopper ls /&lt;/code&gt;
+which doesn&amp;rsquo;t exactly roll off the tongue, but is simple once you get over the
+slight learning curve.&lt;/p&gt;
+
+&lt;p&gt;A really annoying part of using containers for the test/dev cycle is that
+containers&amp;hellip; contain! There isn&amp;rsquo;t a straightforward way to do things like copy
+files from one container to another. With &lt;code&gt;dockerbox&lt;/code&gt;, it&amp;rsquo;s trivial!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /containers
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+$ cp /containers/happy_hopper/etc/fstab /containers/pensive_curran/tmp/other_fstab
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ok, so that example isn&amp;rsquo;t implemented, but it&amp;rsquo;s possible! The best thing about
+the CLI is the possibility for an &lt;a href=&#34;https://www.princeton.edu/~hos/frs122/precis/mcilroy.htm&#34;&gt;orgy of
+one-liners&lt;/a&gt;! With
+&lt;code&gt;dockerbox&lt;/code&gt;, that can be a real possibility.&lt;/p&gt;
+
+&lt;p&gt;Another thing that I wanted to implement was making this cluster-aware. Nobody
+really talks about making something work manually on a single machine. There is
+already some primitive multi-host usage in &lt;code&gt;dockerbox&lt;/code&gt;, but nothing great. It
+would be cool if we could see something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /containers
+host1/  host2/  host3/
+$ ls /containers/host1/
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or better yet:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls /containers
+app1/ app2/ app3/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;but I don&amp;rsquo;t think application-blueprint-aware scheduling exists and would take
+a long time to write.&lt;/p&gt;
+
+&lt;p&gt;With &lt;code&gt;dockerbox&lt;/code&gt; in its current state, you can &lt;code&gt;cat&lt;/code&gt; files, &lt;code&gt;cd&lt;/code&gt; (but I had to
+overwrite the &lt;code&gt;cc&lt;/code&gt; command because &lt;code&gt;cd&lt;/code&gt; is built into &lt;code&gt;bash&lt;/code&gt;), &lt;code&gt;ls&lt;/code&gt;, and some
+other things. There&amp;rsquo;s a fallthrough mechanism built in, so some commands will
+work out of the box (pun intended) without any code needing to be written to
+support it. I overwrote &lt;code&gt;ls&lt;/code&gt; to do things like colorize running/stopped
+containers. Generally anything dealing with the topmost layer of the virtual
+filesystem (the &lt;code&gt;/containers&lt;/code&gt; namespace) would have to be overwritten because
+&lt;code&gt;/containers&lt;/code&gt; doesn&amp;rsquo;t actually exist unless this would be written in the kernel.&lt;/p&gt;
+
+&lt;p&gt;All of this is accomplished using the &lt;a href=&#34;https://docs.docker.com/engine/reference/api/docker_remote_api/&#34;&gt;Docker Remote
+API&lt;/a&gt;. The code
+is on &lt;a href=&#34;https://github.com/kodykantor/`dockerbox`&#34;&gt;GitHub&lt;/a&gt;. The bottom of the
+README has a few other pie in the sky things as well. If it sounds interesting,
+definitely check it out! It is definitely not good code, since it was hacked
+together for a hackathon.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>worth two in the bush</title>
       <link>https://kodykantor.github.io/post/worth-two-in-the-bush/</link>
       <pubDate>Mon, 16 Jan 2017 17:19:11 -0600</pubDate>
       
@@ -72,8 +191,8 @@ learning&amp;rsquo; without fully understanding the implications of doing such a
 
 &lt;p&gt;So what does that mean in the context of our idiom? This:&lt;/p&gt;
 
-&lt;p&gt;**&amp;lsquo;A bird in the hand is worth two in the bush&amp;rsquo; == &amp;lsquo;Running code speaks louder
-&lt;strong&gt;than words&amp;rsquo;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&amp;lsquo;A bird in the hand is worth two in the bush&amp;rsquo; == &amp;lsquo;Running code speaks louder
+than words&amp;rsquo;&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;The bird is the running code, and the two in the bush is the words.&lt;/p&gt;
 
@@ -99,6 +218,8 @@ doubt about that.&lt;/p&gt;
 where I can be a technology hipster. I&amp;rsquo;ll write about a cool idea I have, and
 maybe talk about running code from time to time. This is a magical place where
 you can hear about birds in the hand, and those in the bush.&lt;/p&gt;
+
+&lt;p&gt;edit: fixed a formatting issue&lt;/p&gt;
 </description>
     </item>
     

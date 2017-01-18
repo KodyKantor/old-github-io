@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="dockerbox - the virtual container filesystem" />
+<meta property="og:description" content="Explanation of goals behind &#39;dockerbox&#39; project on GitHub" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kodykantor.github.io/post/dockerbox/" />
+
+
+<meta property="og:updated_time" content="2017-01-17T15:46:05-06:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="dockerbox - the virtual container filesystem">
+<meta itemprop="description" content="Explanation of goals behind &#39;dockerbox&#39; project on GitHub">
+
+
+<meta itemprop="dateModified" content="2017-01-17T15:46:05-06:00" />
+<meta itemprop="wordCount" content="780">
+
+
+
+<meta itemprop="keywords" content="containers,idioms,software," />
+
+
+
+  <meta name="twitter:card" content="summary"/>
+
+
+
+<meta name="twitter:title" content="dockerbox - the virtual container filesystem"/>
+<meta name="twitter:description" content="Explanation of goals behind &#39;dockerbox&#39; project on GitHub"/>
+
+
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.18.1" />
+
+
+    <link rel="canonical" href="https://kodykantor.github.io/post/dockerbox/">
+
+    <title>dockerbox - the virtual container filesystem | a bird in the hand</title>
+
+    <!-- combined, minified CSS -->
+    <link href="https://kodykantor.github.io/css/style.css" rel="stylesheet" integrity="sha384-ljHGkHzrk2uAWnL6ckQF3K9q7djftCvRCQZ0&#43;kZS0Yty0f28DXZlmPIMQvmAhF4m" crossorigin="anonymous">
+
+    
+
+    
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-90522412-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+    
+
+    
+
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="nav blog-nav">
+          <a class="nav-link " href="https://kodykantor.github.io/">main</a>
+          
+          
+          
+        </nav>
+      </div>
+    </div>
+
+    <header class="blog-header">
+      <div class="container">
+        <h1 class="blog-title"><a href="https://kodykantor.github.io/" rel="home">a bird in the hand</a></h1>
+        
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 blog-main">
+
+          
+
+
+<article class="blog-post">
+  <header>
+    <h2 class="blog-post-title"><a href="https://kodykantor.github.io/post/dockerbox/">dockerbox - the virtual container filesystem</a></h2>
+    <p class="blog-post-meta"><time datetime="2017-01-17T15:46:05-06:00">Tue Jan 17, 2017</time> by Kody Kantor in 
+<i class="fa fa-folder" aria-hidden="true"></i>&nbsp;<a href="/categories/software" rel="category tag">software</a>, <a href="/categories/containers" rel="category tag">containers</a>
+
+
+</p>
+  </header>
+  <p>One of my favorite recent projects is my <code>dockerbox</code> project. <code>dockerbox</code> was a
+fun little idea I had after having messed around with Docker for the last couple
+years. <a href="https://www.docker.com/">Docker</a> is a few different things - a REST API
+wrapper around container primitives in the kernel, a packaging mechanism for
+binaries and their dependencies, a process manager, and a bunch of other stuff.</p>
+
+<p>I thoroughly enjoy spending most of my day in the Linux CLI. Something that
+bothers me about Docker is that the CLI is sort-of like the Linux CLI.
+Specifically, there&rsquo;s a <code>docker ps</code> command to list processes (containers), and
+a <code>docker exec</code> command to spawn a process inside of a running container.
+<code>docker exec</code> is a catch-all command, so you can run whatever CLI program you
+want to inside of the spawned container. It&rsquo;s really not hard to use the Docker
+CLI. It has a very slight learning curve. Like most CLI programs, there&rsquo;s a near
+infinite number of commands and flags to control the program.</p>
+
+<p><code>dockerbox</code> aims to provide the familiar Linux CLI to managing containers. If
+I&rsquo;m on Linux (or Unix) and I want to see my running processes, I can do
+something like <code>ls /proc</code>. That will list out the process IDs for running
+processes, and I can drill down from there. Here&rsquo;s something that you might see
+on a Linux host:</p>
+
+<pre><code>$ ls /proc
+1/  10/ 13/ 25/ 138/  139/  1130/
+kmsg  interrupts  meminfo
+...
+</code></pre>
+
+<p>If I wanted to, I could run <code>ls /proc/1/</code> to see information about process 1,
+like open files, cgroup stuff, and more. <code>/proc</code> is a virtual filesystem with a
+<a href="https://blogs.oracle.com/eschrock/entry/the_power_of_proc">cool history</a>.
+<code>/proc</code> may be getting a
+<a href="http://2016.texaslinuxfest.org/sites/default/files/slides/time-to-rethink-proc-160821145019.pdf">rewrite</a>
+in future versions of Linux to fix some of the performance issues that are
+appearing as a result of new tools like <a href="https://criu.org/Main_Page">CRIU</a>. CRIU
+in particular does a ton of open-read-close calls on the files in <code>/proc</code>, which
+are expensive operations. After taking into consideration that CRIU freezes
+applications while it is running means that speed of collecting process
+information is crucial to minimizing application downtime. With the changes
+being suggested, <code>/proc</code> may be going back to resemble its <a href="http://lucasvr.gobolinux.org/etc/Killian84-Procfs-USENIX.pdf">original
+form</a>!</p>
+
+<p><code>dockerbox</code> aims to provide similar functionality for containers. So like <code>/proc</code>
+but for container filesystems. If I were running <code>dockerbox</code> on a machine, I could
+do something like this:</p>
+
+<pre><code>$ ls /containers
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+</code></pre>
+
+<p>Each of the &lsquo;directories&rsquo; listed is a container. Running containers are colored
+green, and stopped/exited containers are colored red. Since those are
+directories, I can do something like this:</p>
+
+<pre><code>$ ls /containers/happy_hopper/
+bin/   dev/   etc/   home/  proc/  root/  sys/   tmp/   usr/   var/
+</code></pre>
+
+<p>The equivalent statement in Docker lingo is <code>docker exec -it happy_hopper ls /</code>
+which doesn&rsquo;t exactly roll off the tongue, but is simple once you get over the
+slight learning curve.</p>
+
+<p>A really annoying part of using containers for the test/dev cycle is that
+containers&hellip; contain! There isn&rsquo;t a straightforward way to do things like copy
+files from one container to another. With <code>dockerbox</code>, it&rsquo;s trivial!</p>
+
+<pre><code>$ ls /containers
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+$ cp /containers/happy_hopper/etc/fstab /containers/pensive_curran/tmp/other_fstab
+</code></pre>
+
+<p>Ok, so that example isn&rsquo;t implemented, but it&rsquo;s possible! The best thing about
+the CLI is the possibility for an <a href="https://www.princeton.edu/~hos/frs122/precis/mcilroy.htm">orgy of
+one-liners</a>! With
+<code>dockerbox</code>, that can be a real possibility.</p>
+
+<p>Another thing that I wanted to implement was making this cluster-aware. Nobody
+really talks about making something work manually on a single machine. There is
+already some primitive multi-host usage in <code>dockerbox</code>, but nothing great. It
+would be cool if we could see something like:</p>
+
+<pre><code>$ ls /containers
+host1/  host2/  host3/
+$ ls /containers/host1/
+happy_hopper/ pensive_curran/ amazing_goldwasser/ admiring_kowalevski/
+</code></pre>
+
+<p>or better yet:</p>
+
+<pre><code>$ ls /containers
+app1/ app2/ app3/
+</code></pre>
+
+<p>but I don&rsquo;t think application-blueprint-aware scheduling exists and would take
+a long time to write.</p>
+
+<p>With <code>dockerbox</code> in its current state, you can <code>cat</code> files, <code>cd</code> (but I had to
+overwrite the <code>cc</code> command because <code>cd</code> is built into <code>bash</code>), <code>ls</code>, and some
+other things. There&rsquo;s a fallthrough mechanism built in, so some commands will
+work out of the box (pun intended) without any code needing to be written to
+support it. I overwrote <code>ls</code> to do things like colorize running/stopped
+containers. Generally anything dealing with the topmost layer of the virtual
+filesystem (the <code>/containers</code> namespace) would have to be overwritten because
+<code>/containers</code> doesn&rsquo;t actually exist unless this would be written in the kernel.</p>
+
+<p>All of this is accomplished using the <a href="https://docs.docker.com/engine/reference/api/docker_remote_api/">Docker Remote
+API</a>. The code
+is on <a href="https://github.com/kodykantor/`dockerbox`">GitHub</a>. The bottom of the
+README has a few other pie in the sky things as well. If it sounds interesting,
+definitely check it out! It is definitely not good code, since it was hacked
+together for a hackathon.</p>
+
+
+  
+
+  
+  <hr>
+  <footer>
+
+  
+    <section>
+    <h4>social</h4>
+    <nav class="nav sharing-icons">
+      <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fkodykantor.github.io%2fpost%2fdockerbox%2f" title="Share on Facebook"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fkodykantor.github.io%2fpost%2fdockerbox%2f" title="Share on Google+"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fkodykantor.github.io%2fpost%2fdockerbox%2f" title="Share on LinkedIn"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://twitter.com/home?status=https%3a%2f%2fkodykantor.github.io%2fpost%2fdockerbox%2f" title="Tweet this"><span class="fa fa-twitter fa-2x"></span></a>
+    </nav>
+  </section>
+
+  
+
+  
+  </footer>
+  
+
+</article> 
+
+
+
+        </div> <!-- /.blog-main -->
+
+        <aside class="col-sm-3 offset-sm-1 blog-sidebar">
+  
+  <section class="sidebar-module sidebar-module-inset">
+    <h4>description</h4>
+    <p>Observations on software development, and other things</p>
+  </section>
+  
+
+  
+  
+
+  <section class="sidebar-module">
+    <h4>recent posts</h4>
+    <ol class="list-unstyled">
+      
+      <li><a href="/post/dockerbox/">dockerbox - the virtual container filesystem</a></li>
+      
+      <li><a href="/post/worth-two-in-the-bush/">worth two in the bush</a></li>
+      
+    </ol>
+  </section>
+
+  
+
+  
+  <section class="sidebar-module">
+    <h4>social</h4>
+    <ol class="list-unstyled">
+      
+      <li><a href="https://github.com/kodykantor">GitHub</a></li>
+      
+      <li><a href="https://www.linkedin.com/in/kodykantor">LinkedIn</a></li>
+      
+    </ol>
+  </section>
+  
+</aside>
+
+
+      </div> <!-- /.row -->
+    </div> <!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>
+      
+      Blog template created by <a href="https://twitter.com/mdo">@mdo</a>, ported to Hugo by <a href='https://twitter.com/mralanorth'>@mralanorth</a>.
+      
+      </p>
+      <p>
+      <a href="#">back to top</a>
+      </p>
+    </footer>
+
+  </body>
+
+</html>
