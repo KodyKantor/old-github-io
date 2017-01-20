@@ -120,7 +120,7 @@ filesystem (the &lt;code&gt;/containers&lt;/code&gt; namespace) would have to be
 
 &lt;p&gt;All of this is accomplished using the &lt;a href=&#34;https://docs.docker.com/engine/reference/api/docker_remote_api/&#34;&gt;Docker Remote
 API&lt;/a&gt;. The code
-is on &lt;a href=&#34;https://github.com/kodykantor/`dockerbox`&#34;&gt;GitHub&lt;/a&gt;. The bottom of the
+is on &lt;a href=&#34;https://github.com/kodykantor/dockerbox&#34;&gt;GitHub&lt;/a&gt;. The bottom of the
 README has a few other pie in the sky things as well. If it sounds interesting,
 definitely check it out! It is definitely not good code, since it was hacked
 together for a hackathon.&lt;/p&gt;
@@ -180,7 +180,7 @@ yearly ideas = 1,000
 engineers all the time. The best engineers are the ones who recognize when their
 idea is good, flesh out their idea, and write the code. The technology hipsters
 are the ones who have good ideas (just like the rest of us) but never intend to
-execute. Technology hipsters are unfortunately very popular at tradition
+execute. Technology hipsters are unfortunately very popular at traditional
 top-down companies. These hipsters appeal to higher-ups with their knowledge of
 buzz words, and willingness to lead whatever initiative would be spun up to take
 on development of such an idea. Technology hipsters tend to trivialize problems
