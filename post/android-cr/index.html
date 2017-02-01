@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta property="og:title" content="android cr" />
+<meta property="og:description" content="Thoughts about the viability of checkpoint-restore in Android" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kodykantor.github.io/post/android-cr/" />
+
+
+<meta property="og:updated_time" content="2017-01-17T10:29:40-06:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="android cr">
+<meta itemprop="description" content="Thoughts about the viability of checkpoint-restore in Android">
+
+
+<meta itemprop="dateModified" content="2017-01-17T10:29:40-06:00" />
+<meta itemprop="wordCount" content="1177">
+
+
+
+<meta itemprop="keywords" content="android,containers,idioms,software," />
+
+
+
+  <meta name="twitter:card" content="summary"/>
+
+
+
+<meta name="twitter:title" content="android cr"/>
+<meta name="twitter:description" content="Thoughts about the viability of checkpoint-restore in Android"/>
+
+
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.18.1" />
+
+
+    <link rel="canonical" href="https://kodykantor.github.io/post/android-cr/">
+
+    <title>android cr | a bird in the hand</title>
+
+    <!-- combined, minified CSS -->
+    <link href="https://kodykantor.github.io/css/style.css" rel="stylesheet" integrity="sha384-ljHGkHzrk2uAWnL6ckQF3K9q7djftCvRCQZ0&#43;kZS0Yty0f28DXZlmPIMQvmAhF4m" crossorigin="anonymous">
+
+    
+
+    
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-90522412-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+    
+
+    
+
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="nav blog-nav">
+          <a class="nav-link " href="https://kodykantor.github.io/">main</a>
+          
+          
+          
+        </nav>
+      </div>
+    </div>
+
+    <header class="blog-header">
+      <div class="container">
+        <h1 class="blog-title"><a href="https://kodykantor.github.io/" rel="home">a bird in the hand</a></h1>
+        
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 blog-main">
+
+          
+
+
+<article class="blog-post">
+  <header>
+    <h2 class="blog-post-title"><a href="https://kodykantor.github.io/post/android-cr/">android cr</a></h2>
+    <p class="blog-post-meta"><time datetime="2017-01-17T10:29:40-06:00">Tue Jan 17, 2017</time> by Kody Kantor in 
+<i class="fa fa-folder" aria-hidden="true"></i>&nbsp;<a href="/categories/software" rel="category tag">software</a>, <a href="/categories/android" rel="category tag">android</a>
+
+
+</p>
+  </header>
+  <p>I got my first computer in 2004 for Christmas. It was some kind of Dell tower
+with an awesome flat screen LCD display! It was given to me in the evening, but
+for some reason I couldn&rsquo;t set it up immediately and I had to wait until the
+morning. When the morning came I got up, and in a flurry of excitement pulled
+all of the parts out of the box and put it all together. It had a single core
+Pentium IV processor, and a whopping 128MB of RAM, integrated graphics, and a
+killer DVD drive. When I had it all put together I clicked the power button and
+heard the fans start up. The lights on the tower came on, but nothing appeared
+on the screen. I double checked that the screen was turned on, and hard-reset
+the tower. Same thing. I think I stared at the blank flat screen monitor for a
+solid ten minutes before giving up.</p>
+
+<p>I went to find my dad to help me figure out why the darn thing wasn&rsquo;t working.
+It turns out that I had neglected to connect the monitor to the tower! A silly
+mistake that only a fifth grader would make!</p>
+
+<p>After a while my brother (who had an identical computer) decided to get a different
+computer, so I took the RAM out of his and stuck it in mine. Math lovers will
+note that I now had 256MB of RAM. I thought that was a lot back then! In 2011 I
+bought parts to put together a computer, and bought 16GB of RAM for something
+like 20 bucks. Now my phone has 2GB of RAM, and it seems like it&rsquo;s always starved
+for memory.</p>
+
+<p>Android, Windows Phone (if that&rsquo;s still a thing), and iOS are all used pretty
+much the same way. You can run one application in the foreground at any given
+time, and the rest of your applications idle in the background, or are killed if
+the system is starved for RAM. For me, it seems like applications are constantly
+being killed to provide RAM for the process in the foreground. This makes
+multitasking really cumbersome and difficult. As a result of the apps being killed,
+I have to wait while they reload when I open them, and all of my session state
+is missing. Is there any way to solve this problem?</p>
+
+<p>One of the things that I was involved in recently was working with some interns
+on implementing live migration of bare-metal processes across machines. We used
+a Linux tool called <a href="https://criu.org/Main_Page">CRIU</a>(checkpoint/restore in userspace) which has the ability
+to checkpoint and restore processes. Even though it&rsquo;s called &lsquo;&hellip;in userspace,&rsquo;
+it has required a number of changes to the Linux kernel, like enabling the kernel
+to track process memory changes, and a fork_with_pid() function that requests
+a specific PID to be used for the new process. They&rsquo;re also considering changing
+the way <code>/proc</code> is designed. <code>/proc</code> is used very heavily during the C/R
+process, so the overhead of opening/closing all of those files is quite large.
+In the case of live migration, any slowdown in CRIU represents an increase in
+the application downtime, which is not good.</p>
+
+<p>Most people think that C/R is only useful for live migration. That&rsquo;s definitely
+not the case! When I was thinking about my phone&rsquo;s RAM problem, I
+thought that it could be an interesting use case for C/R! Android runs on a
+modified Linux kernel, so it may have the ability to run CRIU assuming the Android
+maintainers are merging from upstream (which I believe they are).</p>
+
+<p>The question is, what can we do with C/R in Android? Let&rsquo;s say that I just woke
+up. I like to read the news, check my email, check my calendar, and then
+maybe play a game (nothing like being lazy to start the day!). Maybe I
+get a Snapchat notification while I&rsquo;m playing this game. I switch to the Snapchat
+application, reply to the snap, and then switch back to my game. When I switch back
+to my game I have to completely restart because it was killed! Snapchat uses most
+of the RAM on my device, and so does the game! I&rsquo;m
+frustrated now, so I switch back to Snapchat. It turns out that Snapchat was
+killed while my game was starting! AHHHH! They can&rsquo;t both be in memory, so now
+I have this vicious cycle of frustration.</p>
+
+<p>C/R to the rescue? What if we could checkpoint an application (that we know uses
+a lot of RAM) when it is taken out of the foreground? Then we don&rsquo;t need to worry if it
+gets killed. All of the state (including registers, TCP connections, memory, etc.)
+is on the internal storage. We can use Snapchat all that we want. When we need to
+go back to our game, the system issues a restore from storage. All of the pages
+are mapped back into memory, and we&rsquo;re off to the races! The game is EXACTLY where
+we left it. While we&rsquo;re playing the game, Snapchat is checkpointed so we can return
+to that without having to wait through the agonizing startup routines again.</p>
+
+<p>Now let&rsquo;s say that I was in the middle of beating a boss on my video game when
+I get a phone call. The phone call forces my game to be checkpointed and killed.
+Maybe the phone call was a nasty hacker and they used some weird key tone that
+causes my phone to reboot. Damn it! I was JUST BEATING A BOSS. My phone reboots,
+memory is wiped, and I frantically open the game. Luckily, the game was just
+checkpointed, so it was restored to the point before I got the malicious phone call!
+When I open up the game, I&rsquo;m right back to where I was: in the middle of an
+epic boss fight.</p>
+
+<p>There are a ton of problems with thinking this will work. TCP connections (if
+any - I&rsquo;m not sure that mobile apps maintain long TCP connections) will probably
+be dropped by the server in the time between checkpoint and restore. Android is
+hella fragmented, and that fragmentation goes all the way down to the kernel.
+I&rsquo;m pretty sure manufacturers NEVER update the kernel on their devices. So any
+changes to fix or enhance the kernel features of CRIU would probably never be
+sent out to phones.</p>
+
+<p>Luckily mobile applications don&rsquo;t use much memory, so we shouldn&rsquo;t have to worry
+about copying many GBs of memory to storage when a checkpoint occurs. However,
+phones also don&rsquo;t usually have much extra storage. Another problem would be the
+power usage. I&rsquo;m guessing dumping memory isn&rsquo;t the most efficient of tasks.</p>
+
+<p>There are some cool things about this. Applications could use more memory without
+impacting other applications. Applications persist state across reboots. This
+approach is pretty much only viable as a thought exercise because mobile users
+only interact with one application at a time.</p>
+
+<p>Even though it isn&rsquo;t more than a thought, it&rsquo;s still fun to think about the use
+cases of C/R on Android.</p>
+
+
+  
+
+  
+  <hr>
+  <footer>
+
+  
+    <section>
+    <h4>social</h4>
+    <nav class="nav sharing-icons">
+      <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fkodykantor.github.io%2fpost%2fandroid-cr%2f" title="Share on Facebook"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fkodykantor.github.io%2fpost%2fandroid-cr%2f" title="Share on Google+"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fkodykantor.github.io%2fpost%2fandroid-cr%2f" title="Share on LinkedIn"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+      <a class="nav-item" href="https://twitter.com/home?status=https%3a%2f%2fkodykantor.github.io%2fpost%2fandroid-cr%2f" title="Tweet this"><span class="fa fa-twitter fa-2x"></span></a>
+    </nav>
+  </section>
+
+  
+
+  
+  </footer>
+  
+
+</article> 
+
+
+
+        </div> <!-- /.blog-main -->
+
+        <aside class="col-sm-3 offset-sm-1 blog-sidebar">
+  
+  <section class="sidebar-module sidebar-module-inset">
+    <h4>description</h4>
+    <p>Observations on software development, and other things</p>
+  </section>
+  
+
+  
+  
+
+  <section class="sidebar-module">
+    <h4>recent posts</h4>
+    <ol class="list-unstyled">
+      
+      <li><a href="/post/dockerbox/">dockerbox - the virtual container filesystem</a></li>
+      
+      <li><a href="/post/android-cr/">android cr</a></li>
+      
+      <li><a href="/post/worth-two-in-the-bush/">worth two in the bush</a></li>
+      
+    </ol>
+  </section>
+
+  
+
+  
+  <section class="sidebar-module">
+    <h4>social</h4>
+    <ol class="list-unstyled">
+      
+      <li><a href="https://github.com/kodykantor">GitHub</a></li>
+      
+      <li><a href="https://www.linkedin.com/in/kodykantor">LinkedIn</a></li>
+      
+    </ol>
+  </section>
+  
+</aside>
+
+
+      </div> <!-- /.row -->
+    </div> <!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>
+      
+      Blog template created by <a href="https://twitter.com/mdo">@mdo</a>, ported to Hugo by <a href='https://twitter.com/mralanorth'>@mralanorth</a>.
+      
+      </p>
+      <p>
+      <a href="#">back to top</a>
+      </p>
+    </footer>
+
+  </body>
+
+</html>
